@@ -1,0 +1,6 @@
+# Cine-Stream Media Discovery SPA
+> High-performance Netflix-lite media discovery single page application.
+
+## Application Links
+- [Discover Movies](https://cine-stream-khaki.vercel.app/)
+- [Favorites](https://cine-stream-khaki.vercel.app/favorites)
