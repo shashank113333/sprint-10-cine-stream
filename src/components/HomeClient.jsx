@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { fetchPopularMovies, searchMovies } from '../api/tmdb';
+import { fetchPopularMovies, searchMovies, GENRE_KEYWORD_MAP } from '../api/tmdb';
 import { MovieGrid } from './MovieGrid';
 import { SearchBar } from './SearchBar';
 import { MoodMatcher } from './MoodMatcher';
@@ -37,9 +37,9 @@ export default function HomeClient({ initialMovies = [] }) {
       try {
         let data;
         if (debouncedSearchTerm.trim()) {
-          data = await searchMovies(debouncedSearchTerm, targetPage);
+          data = await searchMovies(debouncedSearchTerm, targetPage, selectedYear);
         } else {
-          data = await fetchPopularMovies(targetPage);
+          data = await fetchPopularMovies(targetPage, selectedGenre, selectedYear);
         }
 
         setTotalPages(data.total_pages || 1);
@@ -53,18 +53,18 @@ export default function HomeClient({ initialMovies = [] }) {
         setLoadingMore(false);
       }
     },
-    [debouncedSearchTerm]
+    [debouncedSearchTerm, selectedGenre, selectedYear]
   );
 
   useEffect(() => {
-    if (debouncedSearchTerm.trim()) {
+    if (debouncedSearchTerm.trim() || selectedGenre !== 'all' || selectedYear !== 'all') {
       loadData(1, false);
     } else if (page === 1 && initialMovies.length > 0) {
       setMovies(initialMovies);
     } else {
       loadData(1, false);
     }
-  }, [debouncedSearchTerm]);
+  }, [debouncedSearchTerm, selectedGenre, selectedYear]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -111,6 +111,19 @@ export default function HomeClient({ initialMovies = [] }) {
         return (b.popularity || 0) - (a.popularity || 0);
       });
   }, [movies, selectedGenre, selectedYear, minRating, sortBy]);
+
+  const sectionTitle = useMemo(() => {
+    if (debouncedSearchTerm.trim()) {
+      return `Results for "${debouncedSearchTerm}"`;
+    }
+    if (selectedGenre !== 'all' && GENRE_KEYWORD_MAP[selectedGenre]) {
+      return `${GENRE_KEYWORD_MAP[selectedGenre]} Movies`;
+    }
+    if (selectedYear !== 'all') {
+      return `Movies from ${selectedYear}`;
+    }
+    return 'Trending & Popular Movies';
+  }, [debouncedSearchTerm, selectedGenre, selectedYear]);
 
   const handleMovieDiscovered = (movieTitle) => {
     setSearchTerm(movieTitle);
@@ -174,7 +187,7 @@ export default function HomeClient({ initialMovies = [] }) {
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '20px' }}>
             <h2 style={{ fontSize: '1.3rem' }}>
-              {debouncedSearchTerm.trim() ? `Results for "${debouncedSearchTerm}"` : 'Trending & Popular Movies'}
+              {sectionTitle}
             </h2>
             <span style={{ color: '#cbd5e1', fontSize: '0.85rem' }}>
               Showing: {filteredMovies.length} of {movies.length} movies

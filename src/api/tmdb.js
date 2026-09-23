@@ -3,36 +3,57 @@ const OMDB_BASE_URL = 'https://www.omdbapi.com';
 
 export const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 
+export const GENRE_KEYWORD_MAP = {
+  '28': 'Action',
+  '35': 'Comedy',
+  '18': 'Drama',
+  '878': 'Sci-Fi',
+  '27': 'Horror',
+  '10749': 'Romance',
+  '16': 'Animation',
+};
+
 export const getPosterUrl = (posterPath) => {
   if (!posterPath || posterPath === 'N/A') return null;
   if (posterPath.startsWith('http')) return posterPath;
   return `${TMDB_IMAGE_BASE_URL}${posterPath}`;
 };
 
-const formatOmdbMovie = (item) => ({
+const formatOmdbMovie = (item, genreId = null) => ({
   id: item.imdbID,
   title: item.Title,
   release_date: item.Year,
   poster_path: item.Poster && item.Poster !== 'N/A' ? item.Poster : null,
   vote_average: 8.2,
+  genre_ids: genreId ? [Number(genreId)] : [28, 35, 18, 878, 27, 10749, 16],
 });
 
 const POPULAR_TOPICS = ['Marvel', 'Batman', 'Avengers', 'Spider-Man', 'Action', 'Star Wars', 'Mission'];
 
-export const fetchPopularMovies = async (page = 1) => {
+export const fetchPopularMovies = async (page = 1, genre = 'all', year = 'all') => {
   try {
-    const topicIndex = Math.floor((page - 1) / 4) % POPULAR_TOPICS.length;
-    const topic = POPULAR_TOPICS[topicIndex];
-    const subPage = ((page - 1) % 4) + 1;
+    let topic = POPULAR_TOPICS[Math.floor((page - 1) / 4) % POPULAR_TOPICS.length];
+    let activeGenreId = null;
 
-    const url = `${OMDB_BASE_URL}/?apikey=${OMDB_API_KEY}&s=${encodeURIComponent(topic)}&page=${subPage}&type=movie`;
+    if (genre !== 'all' && GENRE_KEYWORD_MAP[genre]) {
+      topic = GENRE_KEYWORD_MAP[genre];
+      activeGenreId = genre;
+    }
+
+    const subPage = ((page - 1) % 4) + 1;
+    let url = `${OMDB_BASE_URL}/?apikey=${OMDB_API_KEY}&s=${encodeURIComponent(topic)}&page=${subPage}&type=movie`;
+    
+    if (year !== 'all') {
+      url += `&y=${encodeURIComponent(year)}`;
+    }
+
     const res = await fetch(url, { next: { revalidate: 3600 } });
     const data = await res.json();
 
     if (data && data.Search) {
       return {
         page,
-        results: data.Search.map(formatOmdbMovie),
+        results: data.Search.map((item) => formatOmdbMovie(item, activeGenreId)),
         total_pages: 100,
       };
     }
@@ -43,13 +64,18 @@ export const fetchPopularMovies = async (page = 1) => {
   return { page: 1, results: [], total_pages: 1 };
 };
 
-export const searchMovies = async (query, page = 1) => {
+export const searchMovies = async (query, page = 1, year = 'all') => {
   if (!query || !query.trim()) {
     return { results: [], total_pages: 0, page: 1 };
   }
 
   try {
-    const url = `${OMDB_BASE_URL}/?apikey=${OMDB_API_KEY}&s=${encodeURIComponent(query.trim())}&page=${page}&type=movie`;
+    let url = `${OMDB_BASE_URL}/?apikey=${OMDB_API_KEY}&s=${encodeURIComponent(query.trim())}&page=${page}&type=movie`;
+    
+    if (year !== 'all') {
+      url += `&y=${encodeURIComponent(year)}`;
+    }
+
     const res = await fetch(url, { next: { revalidate: 3600 } });
     const data = await res.json();
 
@@ -57,7 +83,7 @@ export const searchMovies = async (query, page = 1) => {
       const total = parseInt(data.totalResults, 10) || 10;
       return {
         page,
-        results: data.Search.map(formatOmdbMovie),
+        results: data.Search.map((item) => formatOmdbMovie(item)),
         total_pages: Math.ceil(total / 10),
       };
     }

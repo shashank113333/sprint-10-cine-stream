@@ -72,8 +72,14 @@ export const MoodMatcher = ({ onMovieDiscovered }) => {
       </div>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+        <label htmlFor="ai-mood-input" className="sr-only" style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 }}>
+          Describe your vibe or mood for AI matching
+        </label>
         <input
           type="text"
+          id="ai-mood-input"
+          name="aiMood"
+          aria-label="Describe your vibe or mood for AI matching"
           value={moodInput}
           onChange={(e) => setMoodInput(e.target.value)}
           placeholder="e.g. I am feeling sad but want an action movie..."

@@ -23,10 +23,13 @@ export const SearchBar = ({
       >
         <Search size={18} color="#94a3b8" style={{ marginRight: '8px', flexShrink: 0 }} />
 
+        <label htmlFor="movie-search-input" style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 }}>
+          Search movies or TV shows
+        </label>
         <input
           type="text"
           id="movie-search-input"
-          name="search"
+          name="searchQuery"
           aria-label="Search movies or TV shows"
           value={value}
           onChange={(e) => onChange(e.target.value)}

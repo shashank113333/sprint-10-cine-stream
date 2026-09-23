@@ -21,7 +21,8 @@ const GENRES = [
   { id: '16', name: 'Animation' },
 ];
 
-const YEARS = ['all', '2024', '2023', '2022', '2021', '2020'];
+const currentYear = 2025;
+const YEARS = ['all', ...Array.from({ length: 56 }, (_, i) => String(currentYear - i))];
 
 export const FilterSidebar = () => {
   const dispatch = useDispatch();
@@ -72,6 +73,7 @@ export const FilterSidebar = () => {
         </label>
         <select
           id="year-select"
+          name="releaseYear"
           value={selectedYear}
           onChange={(e) => dispatch(setYear(e.target.value))}
           aria-label="Filter movies by Release Year"
@@ -97,6 +99,7 @@ export const FilterSidebar = () => {
         </div>
         <input
           id="rating-range"
+          name="minRating"
           type="range"
           min="0"
           max="9"
@@ -112,6 +115,7 @@ export const FilterSidebar = () => {
         <label htmlFor="sort-select" className="filter-label">Sort By</label>
         <select
           id="sort-select"
+          name="sortBy"
           value={sortBy}
           onChange={(e) => dispatch(setSortBy(e.target.value))}
           aria-label="Sort movies list by criteria"

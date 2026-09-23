@@ -64,7 +64,12 @@ export const Navbar = () => {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '8px' }}>
             <Palette size={16} color="#94a3b8" />
+            <label htmlFor="theme-select" style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 }}>
+              Select Application Color Theme
+            </label>
             <select
+              id="theme-select"
+              name="theme"
               value={currentTheme}
               onChange={(e) => dispatch(setTheme(e.target.value))}
               aria-label="Select Application Color Theme"
